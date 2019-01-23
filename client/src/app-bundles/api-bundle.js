@@ -1,11 +1,9 @@
-
-
 export default {
-  name: 'files',
+  name: 'api',
 
   getReducer: () => {
     const initialState = {
-      files:{}
+      root: 'http://localhost:3002/api/v1'
     }
 
     return (state = initialState, { type, payload }) => {
@@ -18,11 +16,7 @@ export default {
     }
   },
 
-  doFilesSync: () => ({ dispatch, state }) => {
-
-  },
-
-  selectFiles: (state) => {
-    return state.files.files;
+  selectApiRoot: (state) => {
+    return state.api.root;
   }
 }

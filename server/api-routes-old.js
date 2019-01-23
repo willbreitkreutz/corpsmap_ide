@@ -4,7 +4,9 @@ const db = require('./db/db');
 const path = require('path');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
+const { slugify } = require('./utils');
 const fileController = require('./controllers/file-controller');
+const projectController = require('./controllers/project-controller');
 
 router.get('/projects', (req, res) => {
   const sql = 'SELECT * from projects';
@@ -15,6 +17,12 @@ router.get('/projects', (req, res) => {
       res.status(200).json(data);
     }
   })
+})
+
+router.post('/projects', async function(req, res){
+  const projectName = req.body.projectName;
+  const slug = await slugify(projectName);
+  res.status(200).send(slug);
 })
 
 router.post('/projects/:projectId/publish', (req, res) => {
