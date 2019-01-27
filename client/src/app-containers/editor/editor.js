@@ -5,11 +5,15 @@ import AceEditor from 'react-ace';
 import { debounce } from 'lodash';
 
 import 'brace/mode/java';
+import 'brace/mode/javascript';
+import 'brace/mode/json';
+import 'brace/mode/html';
+import 'brace/mode/css';
 import 'brace/theme/github';
 import 'brace/theme/cobalt';
 
 const modes = {
-  'javascript': 'javascript',
+  'js': 'javascript',
   'json': 'json',
   'html': 'html',
   'css': 'css'
@@ -39,13 +43,12 @@ class Editor extends React.Component {
   renderEditor(){
     const { mainContainerHeight, editorFilename, editorContent } = this.props;
     if(!editorFilename) return null;
+    const filetype = new RegExp(/\.(.+)/).exec(editorFilename);
+    const mode = modes[filetype[1]];
     return (
       <div>
-        <div>
-          <span className="list-group-item">{ editorFilename }<i className="mdi mdi-close icon-inline-right"></i></span>
-        </div>
         <AceEditor
-          mode="javascript"
+          mode={ mode }
           theme="cobalt"
           value={ editorContent }
           onChange={ this.handleChange }

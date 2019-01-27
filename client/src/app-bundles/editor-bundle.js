@@ -16,6 +16,8 @@ export default {
 
     return (state = initialState, { type, payload }) => {
       switch(type){
+        case 'EDITOR_OPEN_FILE':
+        case 'EDITOR_CLOSE_FILE':
         case 'EDITOR_LOAD_START':
         case 'EDITOR_LOAD_SUCCESS':
         case 'EDITOR_UPDATE_CONTENT':
@@ -23,14 +25,23 @@ export default {
         case 'EDITOR_SYNC_SUCCESS':
         case 'EDITOR_SYNC_UPDATE':
           return Object.assign({}, state, payload);
+        case 'PROJECTS_SHOULD_OPEN':
+          return Object.assign({}, state, {
+            filename: '',
+            content: ''
+          })
         default: 
           return state;
       }
     }
   },
 
+  doEditorCloseFile: () => ({ dispatch, store }) => {
+    dispatch({ type: 'EDITOR_CLOSE_FILE', payload: { filename: '', content: ''}});
+  },
+
   doEditorOpenFile: (file) => ({ dispatch, store }) => {
-    dispatch({ type: 'EDITOR_OPEN_FILE', payload: { filename: file.filename, shouldLoad: true }});
+    dispatch({ type: 'EDITOR_OPEN_FILE', payload: { filename: file, shouldLoad: true }});
   },
 
   doEditorUpdateContent: (content) => ({ dispatch, store }) => {
@@ -38,24 +49,26 @@ export default {
   },
 
   doEditorLoad: () => ({ dispatch, store }) => {
-    dispatch({ type: 'EDITOR_LOAD_START', payload:{ content: 'Loading...', syncMessage: 'Loading file from server...' }});
+    dispatch({ type: 'EDITOR_LOAD_START', payload:{ shouldLoad: false, content: 'Loading...', syncMessage: 'Loading file from server...' }});
+    const root = store.selectApiDocsRoot();
     const projectSlug = store.selectProjectSlug();
     const filename = store.selectEditorFilename();
-    xhr.get(`/api/docs/${projectSlug}/preview/${filename}`, (err, response, body) => {
+    xhr.get(`${root}/${projectSlug}/preview/${filename}`, (err, response, body) => {
       if(err){
         // do something
       }else{
-        dispatch({ type: 'EDITOR_LOAD_SUCCESS', payload:{ content: body, syncMessage: '' }});
+        dispatch({ type: 'EDITOR_LOAD_SUCCESS', payload:{ content: body || '', syncMessage: '' }});
       }
     })
   },
 
   doEditorSync: () => ({ dispatch, store }) => {
     dispatch({ type: 'EDITOR_SYNC_START', payload: { syncMessage: 'Saving file to server...' }});
-    const projectId = store.selectProjectId();
+    const root = store.selectApiRoot();
+    const projectSlug = store.selectProjectSlug();
     const filename = store.selectEditorFilename();
     const content = store.selectEditorContent();
-    xhr.post(`/api/files/${projectId}/${filename}`,
+    xhr.put(`${root}/projects/${projectSlug}/${filename}`,
     {
       body: content
     },

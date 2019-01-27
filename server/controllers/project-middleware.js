@@ -155,7 +155,7 @@ module.exports.createNewFile = (req, res, next) => {
   const filePath = path.join(previewPath, req.params.filename);
   fs.exists(filePath, (exists) => {
     if(exists) return res.status(500).send('File already exists');
-    fs.writeFile('',{},(err) => {
+    fs.writeFile(filePath, '', (err) => {
       if(err) res.status(500).send(err);
       return next();
     })

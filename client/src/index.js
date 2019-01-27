@@ -11,6 +11,8 @@ import './css/index.css';
 
 const store = createStore();
 
+window.store = store;
+
 ReactDOM.render(<Provider store={store}><App /></Provider>, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change

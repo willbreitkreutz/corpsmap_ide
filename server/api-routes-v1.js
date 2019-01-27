@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const projectMiddleware = require('./controllers/project-middleware');
+const fileMiddleware = require('./controllers/file-middleware');
 
 /**
  * Gets a list of all projects
@@ -48,13 +49,35 @@ router.get('/projects/:slug',
 )
 
 /**
- * Creates a new file for a project with a filename at `req.body.filename`
+ * Get a list of files for a given project slug
  */
-router.put('/projects/:slug/:filename', 
+router.get('/projects/:slug/files',
+  projectMiddleware.selectProjectFiles,
+  (req, res) => {
+    res.status(200).json(req.files);
+  }
+)
+
+/**
+ * Creates a new file for a project with a filename at `req.params.filename`
+ */
+router.post('/projects/:slug/:filename', 
   projectMiddleware.verifyProjectExists,
   projectMiddleware.createNewFile,
   (req, res) => {
     res.status(200).send();
+  }
+)
+
+/**
+ * Update content of a file with content provided as `req.body`
+ */
+router.put('/projects/:slug/:filename',
+  projectMiddleware.verifyProjectExists,
+  fileMiddleware.verifyFileExists,
+  fileMiddleware.updateFile,
+  (req, res) => {
+    res.status(201).send();
   }
 )
 

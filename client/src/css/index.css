@@ -18,6 +18,10 @@ code {
   height: 100%;
 }
 
+.pointer {
+  cursor: pointer;
+}
+
 .icon-inline {
   padding-right: 10px;
 }
@@ -39,4 +43,8 @@ code {
   cursor: pointer;
   background-color: #eaeaea;
   color: #444444;
+}
+
+.list-group-item.active {
+  background-color: #2e283e;
 }

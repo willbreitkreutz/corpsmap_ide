@@ -5,6 +5,7 @@ export default {
 
   getReducer: () => {
     const initialState = {
+      creatingNew: false,
       openProjectId: null,
       openProjectSlug: null,
       openProjectName: null,
@@ -12,18 +13,25 @@ export default {
       projectList: [],
       projectTypes: [],
       shouldOpen: false,
-      shouldLoad: false,
-      shouldLoadTypes: true
+      shouldLoad: true,
+      shouldLoadTypes: true,
+      shouldLoadFiles: false
     }
 
     return (state = initialState, { type, payload }) => {
       switch(type){
         case 'PROJECTS_SHOULD_OPEN':
         case 'PROJECTS_OPEN_START':
+        case 'PROJECTS_OPEN_SUCCESS':
         case 'PROJECTS_LOAD_START':
         case 'PROJECTS_LOAD_SUCCESS':
         case 'PROJECTS_LOAD_TYPES_START':
         case 'PROJECTS_LOAD_TYPES_SUCCESS':
+        case 'PROJECTS_CREATE_NEW_START':
+        case 'PROJECTS_CREATE_NEW_SUCCESS':
+        case 'PROJECTS_FILE_CREATED':
+        case 'PROJECTS_LOAD_FILES_START':
+        case 'PROJECTS_LOAD_FILES_SUCCESS':
           return Object.assign({}, state, payload);
         default:
           return state;
@@ -31,12 +39,16 @@ export default {
     }
   },
 
-  doProjectsCreateNew: (projectName, projectType) => ({ dispatch, store }) => {
+  doProjectsCreateNew: ({projectName, projectType}) => ({ dispatch, store }) => {
+    dispatch({ type: 'PROJECTS_CREATE_NEW_START', payload: { creatingNew: true }});
     const root = store.selectApiRoot();
     xhr.post(`${root}/projects`,{
-        body:{
+        body:JSON.stringify({
           projectName: projectName,
           projectType: projectType
+        }),
+        headers: {
+          "Content-Type": "application/json"
         }
       },
       (err, respones, body) => {
@@ -44,7 +56,7 @@ export default {
           // do something
         }else{
           const project = JSON.parse(body);
-          dispatch({ type: 'PROJECTS_CREATE_NEW', payload: { shouldOpen: true, openProjectSlug: project.slug }});
+          dispatch({ type: 'PROJECTS_CREATE_NEW_SUCCESS', payload: { shouldOpen: true, openProjectSlug: project.slug, creatingNew: false, shouldLoad: true }});
         }
       }
     )
@@ -65,7 +77,8 @@ export default {
 
   doProjectsLoad: () => ({ dispatch, store }) => {
     dispatch({ type: 'PROJECTS_LOAD_START', payload: { shouldLoad: false }});
-    xhr.get(`/projects/`, (err, response, body) => {
+    const root = store.selectApiRoot();
+    xhr.get(`${root}/projects`, (err, response, body) => {
       if(err){
         // do something
       }else{
@@ -75,23 +88,52 @@ export default {
     })
   },
 
-  doProjectsOpen: (projectId) => ({ dispatch, store }) => {
-    dispatch({ type: 'PROJECTS_SHOULD_OPEN', payload: { openProjectId: projectId, shouldOpen: true }});
+  doProjectsOpen: (slug) => ({ dispatch, store }) => {
+    dispatch({ type: 'PROJECTS_SHOULD_OPEN', payload: { openProjectSlug: slug, shouldOpen: true }});
   },
 
   doProjectsShouldOpen: () => ({ dispatch, store }) => {
     dispatch({ type: 'PROJECTS_OPEN_START', payload: { shouldOpen: false }});
-    const projectId = store.selectProjectId();
-    xhr.get(`/projects/${projectId}`, (err, response, body) => {
+    const root = store.selectApiRoot();
+    const slug = store.selectProjectSlug();
+    xhr.get(`${root}/projects/${slug}`, (err, response, body) => {
       if(err){
         // do something
       }else{
         const project = JSON.parse(body);
+        store.doModalClose();
         dispatch({ type: 'PROJECTS_OPEN_SUCCESS', payload: { 
           openProjectName: project.name,
           openProjectSlug: project.slug,
           openProjectFiles: project.files
          }});
+      }
+    })
+  },
+
+  doProjectsLoadFiles: () => ({ dispatch, store }) => {
+    dispatch({ type: 'PROJECTS_LOAD_FILES_START', payload: { shouldLoadFiles: false }});
+    const root = store.selectApiRoot();
+    const slug = store.selectProjectSlug();
+    xhr.get(`${root}/projects/${slug}/files`, (err, response, body) => {
+      if(err || response.statusCode !== 200){
+        // do something
+      }else{
+        const files = JSON.parse(body);
+        dispatch({ type: 'PROJECTS_LOAD_FILES_SUCCESS', payload: { openProjectFiles: files }});
+      }
+    })
+  },
+
+  doProjectsNewFile: (filename) => ({ dispatch, store }) => {
+    const slug = store.selectProjectSlug();
+    const root = store.selectApiRoot();
+    xhr.post(`${root}/projects/${slug}/${filename}`, (err, response, body) => {
+      if(err || response.statusCode !== 200){
+        // do something
+        console.log(err, response);
+      }else{
+        dispatch({ type: 'PROJECTS_FILE_CREATED', payload:{ shouldLoadFiles: true }})
       }
     })
   },
@@ -112,6 +154,14 @@ export default {
     return state.projects.projectTypes;
   },
 
+  selectProjectList: (state) => {
+    return state.projects.projectList;
+  },
+
+  selectProjectName: (state) => {
+    return state.projects.openProjectName
+  },
+
   reactProjectShouldOpen: (state) => {
     if(state.projects.shouldOpen) return { actionCreator: 'doProjectsShouldOpen' };
   },
@@ -122,5 +172,9 @@ export default {
 
   reactProjectShouldLoadTypes: (state) => {
     if(state.projects.shouldLoadTypes) return { actionCreator: 'doProjectsLoadTypes' };
+  },
+
+  reactProjectShouldLoadFiles: (state) => {
+    if(state.projects.shouldLoadFiles) return { actionCreator: 'doProjectsLoadFiles' };
   }
 }

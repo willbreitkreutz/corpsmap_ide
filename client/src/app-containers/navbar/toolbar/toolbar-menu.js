@@ -33,7 +33,7 @@ class Menu extends React.Component {
     return (
       <div className="nav-item dropdown" onMouseLeave={ this.handleMouseLeave }>
         <span onClick={ this.toggleOpen } className="nav-link dropdown-toggle">{ title }</span>
-        <div className={ menuClass } x-placement="bottom-start">
+        <div className={ menuClass } x-placement="bottom-start" style={{top:'35px'}}>
           {
             children
           }
