@@ -29,17 +29,28 @@ class FileListItem extends React.Component {
 
   render(){
     const { file, editorFilename } = this.props;
+    const filetype = new RegExp(/\.(.+)/).exec(file);
     const activeClass = classnames({
       "list-group-item": true,
       "active": file === editorFilename
     })
+    let iconClass = 'mdi mdi-document icon-inline';
+    if(filetype){
+      iconClass = classnames({
+        "mdi": true,
+        "mdi-code-not-equal-variant": filetype[1] === 'html',
+        "mdi-pound": filetype[1] === 'css',
+        "mdi-nodejs": filetype[1] === 'js',
+        "icon-inline": true
+      })
+    }
     return (
       <li className={ activeClass }>
         {
           this.renderCloseButton()
         }
-        <div onClick={this.openFile} >
-          <i className="mdi mdi-pound icon-inline"></i>
+        <div onClick={ this.openFile}  >
+          <i className={ iconClass }></i>
           { file }
         </div>
       </li>

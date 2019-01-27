@@ -30,6 +30,31 @@ module.exports.verifyProjectExists = (req, res, next) => {
 }
 
 /**
+ * Publishs the project by copying all files in /docs/:slug/preview to /docs/:slug
+ */
+module.exports.publish = (req, res, next) => {
+  const previewPath = path.join(__dirname, '../docs', req.params.slug, 'preview');
+  const publishPath = path.join(__dirname, '../docs', req.params.slug);
+  fs.readdir(previewPath, async (err, files) => {
+    if(err) return res.status(500).send(err);
+    try{
+      files.forEach((file) => {
+        fs.copyFileSync(path.join(previewPath, file), path.join(publishPath, file));
+      })
+      const sql = 'update projects set last_published = $lastPublished where slug = $slug';
+      const bindParams = {
+        $slug: req.params.slug,
+        $lastPublished: new Date()
+      };
+      const updated = await db.runAsync(sql, bindParams);
+      next();
+    }catch(e){
+      res.status(500).send(e);
+    }
+  })
+}
+
+/**
  * Selects all available project types and adds them to `req.projectTypes` as an array.
  */
 module.exports.selectAllTypes = (req, res, next) => {

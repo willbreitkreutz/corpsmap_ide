@@ -31,14 +31,16 @@ class Menu extends React.Component {
       "show": open
     })
     return (
-      <div className="nav-item dropdown" onMouseLeave={ this.handleMouseLeave }>
-        <span onClick={ this.toggleOpen } className="nav-link dropdown-toggle">{ title }</span>
-        <div className={ menuClass } x-placement="bottom-start" style={{top:'35px'}}>
-          {
-            children
-          }
+      <li className="nav-item dropdown">
+        <div onMouseLeave={ this.handleMouseLeave }>
+          <span onClick={ this.toggleOpen } className="nav-link dropdown-toggle">{ title }</span>
+          <div className={ menuClass } x-placement="bottom-start" style={{top:'35px'}}>
+            {
+              children
+            }
+          </div>
         </div>
-      </div>
+      </li>
     )
   }
 }

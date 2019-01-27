@@ -4,7 +4,8 @@ export default {
   getReducer: () => {
     const initialState = {
       root: 'http://localhost:3002/api/v1',
-      docsRoot: 'http://localhost:3002/docs'
+      docsRoot: 'http://localhost:3002/apps',
+      appRoot: 'http://localhost:3002/apps'
     }
 
     return (state = initialState, { type, payload }) => {
@@ -23,5 +24,9 @@ export default {
 
   selectApiDocsRoot: (state) => {
     return state.api.docsRoot;
+  },
+
+  selectApiAppRoot: (state) => {
+    return state.api.appRoot;
   }
 }

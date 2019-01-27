@@ -59,6 +59,17 @@ router.get('/projects/:slug/files',
 )
 
 /**
+ * Publish a project at /:slug
+ */
+router.post('/projects/:slug/publish',
+  projectMiddleware.verifyProjectExists,
+  projectMiddleware.publish,
+  (req, res) => {
+    res.status(200).send();
+  }
+)
+
+/**
  * Creates a new file for a project with a filename at `req.params.filename`
  */
 router.post('/projects/:slug/:filename', 

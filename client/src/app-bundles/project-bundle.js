@@ -5,6 +5,7 @@ export default {
 
   getReducer: () => {
     const initialState = {
+      published: false,
       creatingNew: false,
       openProjectId: null,
       openProjectSlug: null,
@@ -32,7 +33,10 @@ export default {
         case 'PROJECTS_FILE_CREATED':
         case 'PROJECTS_LOAD_FILES_START':
         case 'PROJECTS_LOAD_FILES_SUCCESS':
+        case 'PROJECTS_PUBLISHED':
           return Object.assign({}, state, payload);
+        case 'EDITOR_SYNC_SUCCESS':
+          return Object.assign({}, state, { published: false });
         default:
           return state;
       }
@@ -133,7 +137,22 @@ export default {
         // do something
         console.log(err, response);
       }else{
+        store.doModalClose();
         dispatch({ type: 'PROJECTS_FILE_CREATED', payload:{ shouldLoadFiles: true }})
+      }
+    })
+  },
+
+  doProjectsPublish: () => ({ dispatch, store }) => {
+    const slug = store.selectProjectSlug();
+    const root = store.selectApiRoot();
+    const appRoot = store.selectApiAppRoot();
+    xhr.post(`${root}/projects/${slug}/publish`, (err, response, body) => {
+      if(err || response.statusCode !== 200){
+        // do something
+        console.log(err, response);
+      }else{
+        dispatch({ type: 'PROJECTS_PUBLISHED', payload: { published: true }});
       }
     })
   },
@@ -159,7 +178,11 @@ export default {
   },
 
   selectProjectName: (state) => {
-    return state.projects.openProjectName
+    return state.projects.openProjectName;
+  },
+
+  selectProjectPublished: (state) => {
+    return state.projects.published;
   },
 
   reactProjectShouldOpen: (state) => {

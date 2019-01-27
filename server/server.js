@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 app.use('/ide', express.static(path.join(__dirname, '../', 'client', 'build')));
 
 app.use('/api/v1', apiRoutes)
-app.use('/docs', express.static(path.join(__dirname, '/docs')));
+app.use('/apps', express.static(path.join(__dirname, '/docs')));
 
 db.init((err) => {
   if(!err){

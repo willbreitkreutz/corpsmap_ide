@@ -56,6 +56,12 @@ class Editor extends React.Component {
           editorProps={{ $blockScrolling: true }}
           height={ `${mainContainerHeight}px` }
           width="100%"
+          setOptions={{
+            enableBasicAutocompletion: true,
+            enableSnippets: false,
+            showLineNumbers: true,
+            tabSize: 2,
+            }}
         />
       </div>
     )
